@@ -1,6 +1,6 @@
 node 
 {
-def mavenhome = toolname: "maven3.8.1"
+def mavenhome = tool name: "maven3.8.1"
 //properties([[$class: 'JobLocalConfiguration', changeReasonComment: ''], pipelineTriggers([pollSCM('* * * * *')])])
 properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')), [$class: 'JobLocalConfiguration', changeReasonComment: ''], pipelineTriggers([pollSCM('* * * * *')])])
 stage ('checckoutcode')

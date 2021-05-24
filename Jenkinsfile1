@@ -1,0 +1,35 @@
+node 
+{
+def mavenhome = tool name: "maven3.8.1"
+//properties([[$class: 'JobLocalConfiguration', changeReasonComment: ''], pipelineTriggers([pollSCM('* * * * *')])])
+properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')), [$class: 'JobLocalConfiguration', changeReasonComment: ''], pipelineTriggers([pollSCM('* * * * *')])])
+//properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')), [$class: 'JobLocalConfiguration', changeReasonComment: ''], pipelineTriggers([pollSCM('* * * * *')])])
+stage ('checckoutcode')
+{
+    git branch: 'development', credentialsId: 'b069c675-1610-416f-9b17-683c8a4960cc', url: 'https://github.com/saikumar2255/maven-web-application.git'
+}
+stage('Build')
+{
+sh "${mavenhome}/bin/mvn clean package"
+}
+stage ('ExecuteSonarQubeReport')
+{
+sh "${mavenhome}/bin/mvn sonar:sonar"
+}
+stage ('DeployintoArtifactRepository')
+{
+sh "${mavenhome}/bin/mvn deploy"
+}
+stage ('deployAppIntoTomcatserver')
+{
+sshagent(['fc5b09fc-9d7a-4195-ba47-0f6d0c0c0573']) {
+  sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@15.206.168.32:/opt/apache-tomcat-9.0.45/webapps"
+}
+}
+stage('SendEmailNotification')
+{
+emailext body: '''build over 
+regards
+sai''', subject: 'build over', to: 'sai26234@gmail.com'
+}
+}
